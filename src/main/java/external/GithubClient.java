@@ -26,7 +26,7 @@ public class GithubClient{
 	private static final String URL_TEMPLATE = "https://jobs.github.com/positions/json?description=%s&lat=%s&long=%s";
 	private static final String DEFAULT_KEYWORD = "developer";
 	
-	public void search(double lat, double lon, String keyword){
+	public List<Item> search(double lat, double lon, String keyword){
 		if(keyword == null) {
 			keyword = DEFAULT_KEYWORD;
 		}
@@ -39,7 +39,7 @@ public class GithubClient{
 			e.printStackTrace();
 		}
 		
-		String.format(URL_TEMPLATE, keyword, lat, lon);
+		String url = String.format(URL_TEMPLATE, keyword, lat, lon);
 		
 		CloseableHttpClient httpclient = HttpClients.createDefault(); 
 		// HttpClients is the parent of CloseableHttpClient with methods named createDefault
@@ -69,9 +69,15 @@ public class GithubClient{
 			
 		};
 		
+		try {
+			// Excute return anything that is returned by ResponseHandler.handleResponse
+			return httpclient.execute(new HttpGet(url), responseHandler);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		
-
+		return new ArrayList<>();
 	}
 	
 	private String getStringFieldOrEmpty(JSONObject obj, String field) {
