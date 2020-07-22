@@ -1,6 +1,6 @@
 package entity;
 import java.util.Set;
-import org.json.JSONArray;
+
 import org.json.JSONObject;
 
 import lombok.Builder;
@@ -17,4 +17,15 @@ public class Item {
 	private Set<String> keywords;
 	private String imageUrl;
 	private String url;
+	
+	public JSONObject toJSONObject() {
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("item_id", itemId);
+		jsonObject.put("name", name);
+		jsonObject.put("address", address);
+		jsonObject.put("keywords", keywords);
+		jsonObject.put("imageUrl", imageUrl);
+		jsonObject.put("url", url);
+		return jsonObject;
+	}
 }

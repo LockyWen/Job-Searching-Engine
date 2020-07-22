@@ -26,6 +26,15 @@ public class GithubClient{
 	private static final String URL_TEMPLATE = "https://jobs.github.com/positions/json?description=%s&lat=%s&long=%s";
 	private static final String DEFAULT_KEYWORD = "developer";
 	
+	/**
+	 * Return a list of items based on the search of lat, lon and keyword. If empty in the request body OR error status code, 
+	 * search will return empty list.
+	 * @param lat the latitude we want to search for
+	 * @param lon the longitude we want to search for
+	 * @param keyword the keyword we want to search for
+	 * @return a list of items based on the search of lat, lon and keyword. If empty in the request body OR error status code, 
+	 * search will return empty list.
+	 */
 	public List<Item> search(double lat, double lon, String keyword){
 		if(keyword == null) {
 			keyword = DEFAULT_KEYWORD;
@@ -44,7 +53,12 @@ public class GithubClient{
 		CloseableHttpClient httpclient = HttpClients.createDefault(); 
 		// HttpClients is the parent of CloseableHttpClient with methods named createDefault
 		ResponseHandler<List<Item>> responseHandler = new ResponseHandler<List<Item>>(){
+
 			@Override
+			/**
+			 * Get an empty ArrayList iff the response body is empty OR cannot get status. 
+			 * ELse we get a list of items based on the body of response (JSONArray) 
+			 */
 			public List<Item> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
 				if(response.getStatusLine().getStatusCode() != 200 || response.getEntity() == null) {
 					return new ArrayList<>();
@@ -80,6 +94,12 @@ public class GithubClient{
 		return new ArrayList<>();
 	}
 	
+	/**
+	 * 
+	 * @param obj
+	 * @param field
+	 * @return an empty str if the object is null OR a string describing the object if not null. 
+	 */
 	private String getStringFieldOrEmpty(JSONObject obj, String field) {
 		return obj.isNull(field)? "" : obj.getString(field);
 	}
