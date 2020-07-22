@@ -17,3 +17,15 @@ An online github job search and recommendation system
 
 
 ***
+
+## First Step: Test your MonkeyLearnClient Class (Back End 3)
+(1) Go to [MonkeyLearn HomePage](https://monkeylearn.com/). Sign up with your email and enjoy your free trial. <br/>
+(2) Click KeyWord Extractor --> API and you can see your MODEL_ID and API_KEY <br/>
+(3) Copy and paste your API_KEY and MODEL_ID to the MonkeyLearnClient.java. Replace the variables. <br/>
+(4) Test the code with two main functions. 
+
+## Second Step: Test your MySQL and AWS (Back End 5)
+(1) Go to the [AWS homepage](https://aws.amazon.com/) and create your account. <br/>
+(2) Log in. Click `Service` at top left corner, then click `EC2` below the Compute category. See the [documentation of Security group](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html#VPCSecurityGroups) if you are confused. <br/>
+(3) Follow the [instruction](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_GettingStarted.CreatingConnecting.MySQL.html) and create a MySQL DB instance. Your security group should contain the group you create above. !IMPORTANT, make sure your port is 3306. Also, we prefer you to make your master username as "admin"<br/>
+(4) Replace the variables INSTANCE, DB_NAME and PASSWORD. 
