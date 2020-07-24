@@ -20,6 +20,7 @@ import entity.Item;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 
 public class GithubClient{
@@ -66,19 +67,7 @@ public class GithubClient{
 				HttpEntity entity = response.getEntity();
 				String responseBody = EntityUtils.toString(entity);
 				JSONArray itemJsonarray = new JSONArray(responseBody);
-				List<Item> itemList = new ArrayList<>();
-				for(int i = 0; i<itemJsonarray.length(); i++) {
-					JSONObject obj = itemJsonarray.getJSONObject(i);
-					Item newItem = Item.builder()
-							.itemId(getStringFieldOrEmpty(obj, "id"))
-							.name(getStringFieldOrEmpty(obj, "title")).
-							address(getStringFieldOrEmpty(obj, "location")).
-							url(getStringFieldOrEmpty(obj, "url")).
-							imageUrl(getStringFieldOrEmpty(obj, "company_logo")).
-							build();
-					itemList.add(newItem);					
-				}
-				return itemList;
+				return getItemList(itemJsonarray);
 			}
 			
 		};
@@ -92,6 +81,41 @@ public class GithubClient{
 		}
 		
 		return new ArrayList<>();
+	}
+	
+	
+	/**
+	 * According to the input itemJsonarray, we return a list of items with attributes. 
+	 * @param itemJsonarray input JsonArray of items 
+	 * @return a list of corresponding items 
+	 */
+	private List<Item> getItemList(JSONArray itemJsonarray){
+		List<Item> itemList = new ArrayList<>();
+		List<String> descriptions = new ArrayList<>();
+		
+		for(int i = 0; i<itemJsonarray.length(); i++) {
+			String description = getStringFieldOrEmpty(itemJsonarray.getJSONObject(i), "description");
+			if(description.equals("") || description.equals("\n")) {
+				descriptions.add(getStringFieldOrEmpty(itemJsonarray.getJSONObject(i), "title"));
+			}else {
+				descriptions.add(description);
+			}
+			
+			List<List<String>> keywords = MonkeyLearnClient.extractKeywords(descriptions.toArray(new String[descriptions.size()]));
+			JSONObject obj = itemJsonarray.getJSONObject(i);
+			Item newItem = Item.builder()
+					.itemId(getStringFieldOrEmpty(obj, "id"))
+					.name(getStringFieldOrEmpty(obj, "title")).
+					address(getStringFieldOrEmpty(obj, "location")).
+					url(getStringFieldOrEmpty(obj, "url")).
+					imageUrl(getStringFieldOrEmpty(obj, "company_logo")).
+					keywords(new HashSet<String>(keywords.get(i))).
+					build();
+			
+			
+			itemList.add(newItem);					
+		}
+		return itemList;
 	}
 	
 	/**
