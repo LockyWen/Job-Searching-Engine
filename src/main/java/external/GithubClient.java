@@ -24,9 +24,10 @@ import java.util.HashSet;
 
 
 public class GithubClient{
-	private static final String URL_TEMPLATE = "https://jobs.github.com/positions/json?description=%s&lat=%s&long=%s";
+	private static final String URL_TEMPLATE = "https://jobs.github.com/positions.json?description=%s&lat=%s&long=%s";
 	private static final String DEFAULT_KEYWORD = "developer";
 	
+
 	/**
 	 * Return a list of items based on the search of lat, lon and keyword. If empty in the request body OR error status code, 
 	 * search will return empty list.
@@ -36,100 +37,102 @@ public class GithubClient{
 	 * @return a list of items based on the search of lat, lon and keyword. If empty in the request body OR error status code, 
 	 * search will return empty list.
 	 */
-	public List<Item> search(double lat, double lon, String keyword){
+	public List<Item> search(double lat, double lon, String keyword) {
+		
+		//Assign a value for keyword
 		if(keyword == null) {
 			keyword = DEFAULT_KEYWORD;
 		}
-
+		
 		try {
-			// URLEncoder is needed for keyword
 			keyword = URLEncoder.encode(keyword, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		}catch(UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		
+		//Update the url
 		String url = String.format(URL_TEMPLATE, keyword, lat, lon);
 		
-		CloseableHttpClient httpclient = HttpClients.createDefault(); 
-		// HttpClients is the parent of CloseableHttpClient with methods named createDefault
-		ResponseHandler<List<Item>> responseHandler = new ResponseHandler<List<Item>>(){
-
+		//IMPOSTANT 
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		
+		//create a custom response handler to handle the response 
+		ResponseHandler<List<Item>> responseHandler = new ResponseHandler<List<Item>>() {
+			
 			@Override
-			/**
-			 * Get an empty ArrayList iff the response body is empty OR cannot get status. 
-			 * ELse we get a list of items based on the body of response (JSONArray) 
+			/**\
+			 * if we cannot get the response (status: not 200) or the entity is empty, we will return a new list of items,
+			 * ELse, we will transfer response.getEntity to string and then write it into an JSONArray
+			 * final HttpResponse response: 
 			 */
-			public List<Item> handleResponse(final HttpResponse response) throws IOException {
-				if(response.getStatusLine().getStatusCode() != 200 || response.getEntity() == null) {
+			public List<Item> handleResponse(final HttpResponse response) throws IOException{
+				if (response.getStatusLine().getStatusCode() != 200) {
 					return new ArrayList<>();
 				}
 				HttpEntity entity = response.getEntity();
+				if(entity == null) {
+					return new ArrayList<>();
+				}
 				String responseBody = EntityUtils.toString(entity);
-				JSONArray itemJsonarray = new JSONArray(responseBody);
-				return getItemList(itemJsonarray);
+				JSONArray array = new JSONArray(responseBody);
+				return getItemList(array);  //Update
 			}
-			
 		};
 		
 		try {
-			// Excute return anything that is returned by ResponseHandler.handleResponse
-			return httpclient.execute(new HttpGet(url), responseHandler);
+			return httpclient.execute(new HttpGet(url), responseHandler); // Why not change?
 		}catch(ClientProtocolException e) {
 			e.printStackTrace();
-		}
-		catch (IOException e) {
+		}catch(IOException e) {
 			e.printStackTrace();
 		}
 		
-		return new ArrayList<>();
+		return new ArrayList<>(); // Update 
 	}
 	
+	// Why it matters? 
 	
 	/**
-	 * According to the input itemJsonarray, we return a list of items with attributes. 
-	 * @param itemJsonarray input JsonArray of items 
-	 * @return a list of corresponding items 
+	 * Get a list of items objects from JSONArray 
+	 * @param array the JSONArray contains json objects from 
+	 * @return a list of item objects stored in the JSONArray 
 	 */
-	private List<Item> getItemList(JSONArray itemJsonarray){
-		// Description
+	private List<Item> getItemList(JSONArray array){
 		List<Item> itemList = new ArrayList<>();
-		List<String> descriptions = new ArrayList<>();
+		List<String> descriptionList = new ArrayList<>();
 		
-		for(int i = 0; i<itemJsonarray.length(); i++) {
-			String description = getStringFieldOrEmpty(itemJsonarray.getJSONObject(i), "description");
+		for(int j = 0; j < array.length(); j++) {
+			String description = getStringFieldOrEmpty(array.getJSONObject(j), "description");
 			if(description.equals("") || description.equals("\n")) {
-				descriptions.add(getStringFieldOrEmpty(itemJsonarray.getJSONObject(i), "title"));
+				// If empty in description, we use title to do extraction
+				descriptionList.add(getStringFieldOrEmpty(array.getJSONObject(j), "title"));
 			}else {
-				descriptions.add(description);
+				descriptionList.add(description);
 			}
+		}
+		
+		List<List<String>> keywords = MonkeyLearnClient.extractKeywords(descriptionList.toArray(new String[descriptionList.size()]));
+		
+		
+		for(int i = 0; i<array.length(); ++i) {
 			
-			List<List<String>> keywords = MonkeyLearnClient.extractKeywords(descriptions.toArray(new String[descriptions.size()]));
+			JSONObject object = array.getJSONObject(i);   // Iterate and get the JSONObject from jsonarray
 			
-			// Build Item 
-			JSONObject obj = itemJsonarray.getJSONObject(i);
-			Item newItem = Item.builder()
-					.itemId(getStringFieldOrEmpty(obj, "id"))
-					.name(getStringFieldOrEmpty(obj, "title")).
-					address(getStringFieldOrEmpty(obj, "location")).
-					url(getStringFieldOrEmpty(obj, "url")).
-					imageUrl(getStringFieldOrEmpty(obj, "company_logo")).
-					keywords(new HashSet<String>(keywords.get(i))).
-					build();
-			
-			
-			itemList.add(newItem);					
+			Item item = Item.builder()
+							.itemId(getStringFieldOrEmpty(object, "id"))
+							.name(getStringFieldOrEmpty(object, "title"))
+							.address(getStringFieldOrEmpty(object, "location"))
+							.url(getStringFieldOrEmpty(object, "url"))
+							.imageUrl(getStringFieldOrEmpty(object, "company_logo"))
+							.keywords(new HashSet<String>(keywords.get(i))).build();
+			itemList.add(item);
 		}
 		return itemList;
+		
 	}
 	
-	/**
-	 * 
-	 * @param obj
-	 * @param field
-	 * @return an empty str if the object is null OR a string describing the object if not null. 
-	 */
 	private String getStringFieldOrEmpty(JSONObject obj, String field) {
-		return obj.isNull(field)? "" : obj.getString(field);
+		return obj.isNull(field)? "": obj.getString(field);
 	}
 
 }

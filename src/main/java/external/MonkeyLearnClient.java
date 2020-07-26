@@ -13,8 +13,8 @@ import com.monkeylearn.MonkeyLearnException;
 import com.monkeylearn.MonkeyLearnResponse;
 
 public class MonkeyLearnClient {
-	private static final String MODEL_ID = "Your_Model_Key";  // Replace
-	private static final String API_KEY = "Your_Api_Key"; // Replace
+	private static final String MODEL_ID = "YOUR_MODEL_ID";  // Replace
+	private static final String API_KEY = "YOUR_API_KEY"; // Replace
 	
 	
 	
@@ -58,6 +58,9 @@ public class MonkeyLearnClient {
 	 * @return a list of list that contains the max three keywords of the document. OR empty arrayList if nothing found.
 	 */
 	public static List<List<String>> extractKeywords(String[] textList){
+		if(textList==null || textList.length == 0) {
+			return new ArrayList<>();
+		}
 		MonkeyLearn ml = new MonkeyLearn(API_KEY);
 		ExtraParam[] extraParams = {new ExtraParam("max_keywords", "3")};
 		try {

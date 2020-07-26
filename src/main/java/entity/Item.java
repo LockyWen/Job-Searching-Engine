@@ -1,6 +1,7 @@
 package entity;
 import java.util.Set;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import lombok.Builder;
@@ -23,7 +24,7 @@ public class Item {
 		jsonObject.put("item_id", itemId);
 		jsonObject.put("name", name);
 		jsonObject.put("address", address);
-		jsonObject.put("keywords", keywords);
+		jsonObject.put("keywords", new JSONArray(keywords));
 		jsonObject.put("imageUrl", imageUrl);
 		jsonObject.put("url", url);
 		return jsonObject;
