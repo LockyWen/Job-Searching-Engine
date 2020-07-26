@@ -13,8 +13,8 @@ import com.monkeylearn.MonkeyLearnException;
 import com.monkeylearn.MonkeyLearnResponse;
 
 public class MonkeyLearnClient {
-	private static final String MODEL_ID = "Your Model Id for MonkeyLearn/Keyword extraction";  // Replace
-	private static final String API_KEY = "Your API Key Id for MonkeyLearn/Keyword extraction"; // Replace
+	private static final String MODEL_ID = "Your_Model_Key";  // Replace
+	private static final String API_KEY = "Your_Api_Key"; // Replace
 	
 	
 	

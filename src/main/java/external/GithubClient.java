@@ -45,7 +45,6 @@ public class GithubClient{
 			// URLEncoder is needed for keyword
 			keyword = URLEncoder.encode(keyword, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -60,7 +59,7 @@ public class GithubClient{
 			 * Get an empty ArrayList iff the response body is empty OR cannot get status. 
 			 * ELse we get a list of items based on the body of response (JSONArray) 
 			 */
-			public List<Item> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+			public List<Item> handleResponse(final HttpResponse response) throws IOException {
 				if(response.getStatusLine().getStatusCode() != 200 || response.getEntity() == null) {
 					return new ArrayList<>();
 				}
@@ -75,8 +74,10 @@ public class GithubClient{
 		try {
 			// Excute return anything that is returned by ResponseHandler.handleResponse
 			return httpclient.execute(new HttpGet(url), responseHandler);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		}catch(ClientProtocolException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		
@@ -90,6 +91,7 @@ public class GithubClient{
 	 * @return a list of corresponding items 
 	 */
 	private List<Item> getItemList(JSONArray itemJsonarray){
+		// Description
 		List<Item> itemList = new ArrayList<>();
 		List<String> descriptions = new ArrayList<>();
 		
@@ -102,6 +104,8 @@ public class GithubClient{
 			}
 			
 			List<List<String>> keywords = MonkeyLearnClient.extractKeywords(descriptions.toArray(new String[descriptions.size()]));
+			
+			// Build Item 
 			JSONObject obj = itemJsonarray.getJSONObject(i);
 			Item newItem = Item.builder()
 					.itemId(getStringFieldOrEmpty(obj, "id"))
