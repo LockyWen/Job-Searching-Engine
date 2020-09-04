@@ -2,7 +2,10 @@ package rpc;
 
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import external.GithubClient;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,4 +41,20 @@ public class RpcHelper {
 		response.getWriter().print(object);
 	}
 	
+	// Convert JSON Object to an Item Object 
+	public static Item parseFavoriteItem(JSONObject favoriteItem) {
+		Set<String> keywords = new HashSet<>();
+		JSONArray array = favoriteItem.getJSONArray("keywords");
+		for(int i = 0; i < array.length(); i++) {
+			keywords.add(array.getString(i));
+		}
+		return Item.builder()
+				.itemId(favoriteItem.getString("item_id"))
+				.name(favoriteItem.getString("name"))
+				.address(favoriteItem.getString("address"))
+				.imageUrl(favoriteItem.getString("image_url"))
+				.url(favoriteItem.getString("url"))
+				.keywords(keywords)
+				.build();
+	}
 }
