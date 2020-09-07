@@ -13,6 +13,9 @@
 		document.querySelector('#register-form-btn').addEventListener('click', showRegisterForm);
 		document.querySelector('#register-btn').addEventListener('click', register);
 		document.querySelector('#login-btn').addEventListener('click', login);
+		document.querySelector('#nearby-btn').addEventListener('click', loadNearbyItems);
+		document.querySelector('#fav-btn').addEventListener('click', loadFavoriteItems);
+		document.querySelector('#recommend-btn').addEventListener('click', loadRecommendedItems);
 		
 		validateSession();
 	}
@@ -164,6 +167,128 @@
 		document.querySelector('#register-result').innerHTML = '';
 	}
 	
+	//--------------------------------------
+	// Functions about geolocation
+	//--------------------------------------
+	
+	function initGeoLocation(){
+		if(navigator.geolocation){
+			navigator.geolocation.getCurrentPosition(onPositionUpdated, onLoadPositionFailed, {maximumAge: 60000});
+			showLoadingMessage('Retrieving your location ... ');
+		}else{
+			onLoadPositionFailed();
+		}
+	}
+	
+	function onPositionUpdated(position){
+		lat = position.coords.latitude;
+		lon = position.coords.longitude;
+		loadNearbyItems();
+	}
+	
+	function onLoadPositionFailed(){
+		console.warn('navigator.geolocation is not available');
+		getLocationFromIP();
+	}
+	
+	function getLocationFromIP(){
+		var url = 'http://ipinfo.io/json';
+		var data = null;
+		
+		ajax('GET', url, data, function(res){
+			var result = JSON.parse(res);
+			if('loc' in result){
+				var loc = result.loc.split(',');
+				lat = loc[0];
+				lng = loc[1];
+			}else{
+				console.warn('Getting location by IP failed');
+			}
+			loadNearbyItems();
+		});
+	}
+	
+	//-------------------------------------
+	// Function about favorite items
+	// [GET] /history?user_id=1111
+	//--------------------------------------
+	
+	function loadFavoriteItems(){
+		activeBtn('fav-btn');
+		
+		//request parameters
+		var url = './history';
+		var params = 'user_id=' + user_id;
+		var req = JSON.stringify({});
+		
+		showLoadingMessage('Loading favorite items...');
+		
+		ajax('GET', url + '?' + params, req, function(res){
+			var items = JSON.parse(res);
+			if(!items || items.length == 0){
+				showWarningMessage('No favorite item.');
+			}else{
+				listItems(items);
+				} 
+			}, function(){
+				showErrorMessage('Cannot load favorite items');
+		});
+	}
+	
+	function changeFavoriteItem(item){
+		
+		var li = document.querySelector('#item-'+item.item_id);
+		var favIcon = document.querySelector('#fav-icon-' + item.item_id);
+		var favorite = !(li.dataset.favorite === true);
+		
+		var url = './history';
+		var req = JSON.stringify({
+			user_id: user_id,
+			favorite: item
+		});
+		var method = favorite?'POST' : 'DELETE';
+		
+		ajax(method, url, req, 
+			function(res){
+				var result = JSON.parse(res);
+				if(result.status === 'OK' || result.result === 'SUCCESS'){
+					li.dataset.favorite = favorite;
+					favIcon.className = favorite?'fa fa-heart' : 'fa fa-heart-o';
+				}
+			}, 
+			function(){
+				console.log('change favorite failed!')
+			});
+	}
+	
+	//-------------------------------------
+	// Function about recommended items
+	// [GET] /recommendation?user_id=1111
+	//--------------------------------------
+	
+	function loadRecommendedItems(){
+		activeBtn('recommend-btn');
+		
+		var url = './recommenation?user_id=' + user_id + '&lat=' + lat + '&lon=' + lng;
+		var data = null;
+		
+		showLoadingMessage('Loading recommended items');
+		
+		ajax('GET', url, data, 
+			function(res){
+				var items = JSON.parse(res);
+				if(!items || items.length == 0){
+					showWarningMessage('No recommended item. Make sure you have favorites.');
+				}else{
+					listItems(items);
+				}
+			}, 
+			
+			function(res){
+				showErrorMessage('Cannot load recommended items');
+			});
+		
+	}
 	
 	//--------------------------------------
 	// Function : Register
