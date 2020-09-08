@@ -3,10 +3,7 @@ An online github job search and recommendation system
 
 ## Overview
 
-<img src="https://github.com/LockyWen/Job-Searching-Engine/tree/master/src/main/resource/showcase.gif" width="600" height="325"/>
-
-![](https://github.com/LockyWen/Job-Searching-Engine/tree/master/src/main/resource/showcase.gif)
-Please click [the empty image](https://github.com/LockyWen/Job-Searching-Engine/tree/master/src/main/resource/showcase.gif) to have a overview of the project. 
+![showcase](https://user-images.githubusercontent.com/61830237/92479286-5a04f080-f1b1-11ea-991e-d3fd6d236b5a.gif)
 
 ## Introduction
 
