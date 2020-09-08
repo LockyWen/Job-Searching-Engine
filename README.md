@@ -6,6 +6,7 @@ An online github job search and recommendation system
 <img src="https://github.com/LockyWen/Job-Searching-Engine/tree/master/src/main/resource/showcase.gif" width="600" height="325"/>
 
 ![](https://github.com/LockyWen/Job-Searching-Engine/tree/master/src/main/resource/showcase.gif)
+Please click [the empty image](https://github.com/LockyWen/Job-Searching-Engine/tree/master/src/main/resource/showcase.gif) to have a overview of the project. 
 
 ## Introduction
 
