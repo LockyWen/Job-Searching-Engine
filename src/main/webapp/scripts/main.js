@@ -392,12 +392,6 @@
 		btn.className += ' active';
 	}
 
-	function showLoadingMessage(msg) {
-		var itemList = document.querySelector('#item-list');
-		itemList.innerHTML = '<p class="notice"><i class="fa fa-spinner fa-spin"></i> '
-				+ msg + '</p>';
-	}
-
 	function showWarningMessage(msg) {
 		var itemList = document.querySelector('#item-list');
 		itemList.innerHTML = '<p class="notice"><i class="fa fa-exclamation-triangle"></i> '
@@ -451,9 +445,6 @@
 		showElement(registerForm);
 	}
 
-	function clearRegisterResult() {
-		document.querySelector('#register-result').innerHTML = '';
-	}
 	function hideElement(element) {
 		element.style.display = 'none';
 	}
@@ -482,7 +473,7 @@
 			return;
 		}
 
-		if (username.match(/^[a-z0-9_]+$/) === null) {
+		if (username.match(/^[A-z0-9_]+$/) === null) {
 			showRegisterResult('Invalid username');
 			return;
 		}

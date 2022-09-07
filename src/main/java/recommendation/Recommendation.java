@@ -14,7 +14,7 @@ import entity.Item;
 import external.GithubClient;
 
 public class Recommendation {
-	public List<Item> recommendItems(String userId, double lat, double lon){
+	public List<Item> recommendItems(String userId){
 		List<Item> recommendedItems = new ArrayList<>();
 		
 		// Get all favorite items.
@@ -32,9 +32,7 @@ public class Recommendation {
 		connection.close();
 		
 		List<Entry<String, Integer>> keywordList = new ArrayList<>(allKeywords.entrySet());
-		Collections.sort(keywordList, (Entry<String, Integer> e1, Entry<String, Integer> e2) -> {
-			return Integer.compare(e2.getValue(), e1.getValue());
-		});
+		keywordList.sort((Entry<String, Integer> e1, Entry<String, Integer> e2) -> Integer.compare(e2.getValue(), e1.getValue()));
 		
 		// cut down search list only top 3
 		if(keywordList.size() > 3) {
@@ -46,7 +44,7 @@ public class Recommendation {
 		GithubClient client = new GithubClient();
 		
 		for(Entry<String, Integer> keyword: keywordList) {
-			List<Item> items = client.search(lat, lon, keyword.getKey());
+			List<Item> items = client.search(keyword.getKey());
 			for(Item item: items) {
 				if(!favoritedItemIds.contains(item.getItemId()) && !visitedItemIds.contains(item.getItemId())) {
 					recommendedItems.add(item);

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,7 +35,7 @@ public class SearchItem extends HttpServlet {
 	 * get the lat and log from the request and then write this to the response 
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession(false);
 		if (session == null) {
@@ -45,13 +44,11 @@ public class SearchItem extends HttpServlet {
 		}
 
 		String userId = request.getParameter("user_id");
-		double lat = Double.parseDouble(request.getParameter("lat"));
-		double lon = Double.parseDouble(request.getParameter("lon"));
 		
 				
 
 		GithubClient client = new GithubClient();
-		List<Item> items = client.search(lat, lon, null);
+		List<Item> items = client.search(null);
 
 		MySQLConnection connection = new MySQLConnection();
 		Set<String> favoritedItemIds = connection.getFavoriteItemIds(userId);
@@ -73,7 +70,7 @@ public class SearchItem extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}

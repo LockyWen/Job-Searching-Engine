@@ -3,7 +3,6 @@ package rpc;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,7 +30,7 @@ public class RecommendItem extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession(false);
 		if(session==null) {
@@ -39,12 +38,10 @@ public class RecommendItem extends HttpServlet {
 			return;
 		}
 		String userId = request.getParameter("user_id");
-		
-		double lat = Double.parseDouble(request.getParameter("lat"));
-		double lon = Double.parseDouble(request.getParameter("lon"));
+
 		
 		Recommendation recommendation = new Recommendation();
-		List<Item> items = recommendation.recommendItems(userId, lat, lon);
+		List<Item> items = recommendation.recommendItems(userId);
 		
 		JSONArray array = new JSONArray();
 		for(Item item: items) {
@@ -56,7 +53,7 @@ public class RecommendItem extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}

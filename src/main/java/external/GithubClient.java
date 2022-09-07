@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 // Any changes after pom.xml must click Sava button and then Maven install 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -13,31 +14,26 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import entity.Item;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 
 
 public class GithubClient{
-	private static final String URL_TEMPLATE = "https://jobs.github.com/positions.json?description=%s&lat=%s&long=%s";
+	private static final String URL_TEMPLATE = "https://www.themuse.com/api/public/jobs?page=1&api_key=e300a5a75f3402f92cab016ff68a36ae5b81ffa1adaa30f334f96ce4c7115b0c";
 	private static final String DEFAULT_KEYWORD = "developer";
 	
 
 	/**
 	 * Return a list of items based on the search of lat, lon and keyword. If empty in the request body OR error status code, 
 	 * search will return empty list.
-	 * @param lat the latitude we want to search for
-	 * @param lon the longitude we want to search for
 	 * @param keyword the keyword we want to search for
 	 * @return a list of items based on the search of lat, lon and keyword. If empty in the request body OR error status code, 
 	 * search will return empty list.
 	 */
-	public List<Item> search(double lat, double lon, String keyword) {
+	public List<Item> search(String keyword) {
 		
 		//Assign a value for keyword
 		if(keyword == null) {
@@ -51,8 +47,8 @@ public class GithubClient{
 		}
 		
 		//Update the url
-		String url = String.format(URL_TEMPLATE, keyword, lat, lon);
-		
+//		String url = String.format(URL_TEMPLATE, keyword, lat, lon);
+		String url = URL_TEMPLATE;
 		//IMPOSTANT 
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		
@@ -74,8 +70,18 @@ public class GithubClient{
 					return new ArrayList<>();
 				}
 				String responseBody = EntityUtils.toString(entity);
-				JSONArray array = new JSONArray(responseBody);
-				return getItemList(array);  //Update
+				ObjectMapper mapper = new ObjectMapper();
+				try{
+					Map<String, Object> jsonMap = mapper.readValue(responseBody, Map.class);
+					ArrayList<LinkedHashMap<String, Object>> map = (ArrayList<LinkedHashMap<String, Object>>)jsonMap.get("results");
+					// ArrayList<LinkedHashMap<String, String>>
+					return getItemList(map);
+				}catch (Exception e){
+					e.printStackTrace();
+
+				}
+//				JSONArray array = new JSONArray(responseBody);
+				return getItemList(new ArrayList<>());  //Update
 			}
 		};
 		
@@ -86,6 +92,8 @@ public class GithubClient{
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
+		// create file
+
 		
 		return new ArrayList<>(); // Update 
 	}
@@ -97,15 +105,15 @@ public class GithubClient{
 	 * @param array the JSONArray contains json objects from 
 	 * @return a list of item objects stored in the JSONArray 
 	 */
-	private List<Item> getItemList(JSONArray array){
+	private List<Item> getItemList(ArrayList<LinkedHashMap<String, Object>> array){
 		List<Item> itemList = new ArrayList<>();
 		List<String> descriptionList = new ArrayList<>();
 		
-		for(int j = 0; j < array.length(); j++) {
-			String description = getStringFieldOrEmpty(array.getJSONObject(j), "description");
+		for(int j = 0; j < array.size(); j++) {
+			String description = (String)array.get(j).get("contents");
 			if(description.equals("") || description.equals("\n")) {
 				// If empty in description, we use title to do extraction
-				descriptionList.add(getStringFieldOrEmpty(array.getJSONObject(j), "title"));
+				descriptionList.add((String)array.get(j).get("name"));
 			}else {
 				descriptionList.add(description);
 			}
@@ -114,17 +122,16 @@ public class GithubClient{
 		List<List<String>> keywords = MonkeyLearnClient.extractKeywords(descriptionList.toArray(new String[descriptionList.size()]));
 		
 		
-		for(int i = 0; i<array.length(); ++i) {
+		for(int i = 0; i<array.size(); ++i) {
 			
-			JSONObject object = array.getJSONObject(i);   // Iterate and get the JSONObject from jsonarray
+			LinkedHashMap<String, Object> object = array.get(i);   // Iterate and get the JSONObject from jsonarray
 			
 			Item item = Item.builder()
-							.itemId(getStringFieldOrEmpty(object, "id"))
-							.name(getStringFieldOrEmpty(object, "title"))
-							.address(getStringFieldOrEmpty(object, "location"))
-							.url(getStringFieldOrEmpty(object, "url"))
-							.imageUrl(getStringFieldOrEmpty(object, "company_logo"))
-							.keywords(new HashSet<String>(keywords.get(i))).build();
+							.itemId(object.get("id").toString())
+							.name(object.get("name") + ", " + ((LinkedHashMap<String, Object>)object.get("company")).get("name"))
+							.address( ((List<LinkedHashMap<String, String>>)object.get("locations")).get(0).get("name"))
+							.url(((LinkedHashMap<String, String>)object.get("refs")).get("landing_page"))
+							.build();
 			itemList.add(item);
 		}
 		return itemList;
