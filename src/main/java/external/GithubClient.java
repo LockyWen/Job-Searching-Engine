@@ -80,7 +80,6 @@ public class GithubClient{
 					e.printStackTrace();
 
 				}
-//				JSONArray array = new JSONArray(responseBody);
 				return getItemList(new ArrayList<>());  //Update
 			}
 		};

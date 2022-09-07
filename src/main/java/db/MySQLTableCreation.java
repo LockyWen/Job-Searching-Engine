@@ -52,6 +52,7 @@ public class MySQLTableCreation {
 					+ "address VARCHAR(255),"
 					+ "image_url VARCHAR(255),"
 					+ "url VARCHAR(255),"
+					+ "contents text,"
 					+ "PRIMARY KEY (item_id)"
 					+ ")";
 			statement.executeUpdate(sql);

@@ -18,6 +18,7 @@ public class Item {
 	private Set<String> keywords;
 	private String imageUrl;
 	private String url;
+	private String contents;
 	
 	public JSONObject toJSONObject() {
 		JSONObject jsonObject = new JSONObject();
@@ -27,6 +28,7 @@ public class Item {
 		jsonObject.put("keywords", new JSONArray(keywords));
 		jsonObject.put("imageUrl", imageUrl);
 		jsonObject.put("url", url);
+		jsonObject.put("contents", contents);
 		return jsonObject;
 	}
 }
